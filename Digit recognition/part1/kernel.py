@@ -19,8 +19,13 @@ def polynomial_kernel(X, Y, c, p):
         Returns:
             kernel_matrix - (n, m) Numpy array containing the kernel matrix
     """
-    # YOUR CODE HERE
+    
+    """ @author: YiWei """
+    X_Yt = np.matmul(X,np.transpose(Y))
+    kernel_matrix = (X_Yt+c)**p
+    return kernel_matrix
     raise NotImplementedError
+    """ @author: YiWei """
 
 
 
@@ -38,5 +43,14 @@ def rbf_kernel(X, Y, gamma):
         Returns:
             kernel_matrix - (n, m) Numpy array containing the kernel matrix
     """
-    # YOUR CODE HERE
+    
+    """ @author: YiWei """
+    n = X.shape[0]
+    m = Y.shape[0]
+    kernel = np.zeros((n,m))
+    for x_id in range(n):
+        for y_id in range(m):
+            kernel[x_id,y_id] = np.exp(-gamma*((np.linalg.norm(X[x_id] - Y[y_id]))**2))
+    return kernel            
     raise NotImplementedError
+    """ @author: YiWei """

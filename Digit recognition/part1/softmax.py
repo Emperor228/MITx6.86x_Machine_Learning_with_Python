@@ -5,7 +5,7 @@ from utils import *
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.sparse as sparse
-
+import math
 
 def augment_feature_vector(X):
     """
@@ -31,8 +31,20 @@ def compute_probabilities(X, theta, temp_parameter):
     Returns:
         H - (k, n) NumPy array, where each entry H[j][i] is the probability that X[i] is labeled as j
     """
-    #YOUR CODE HERE
+    
+    """ @author: YiWei """
+    theta_xt = np.matmul(theta,np.transpose(X))
+    theta_xt_devi_by_temp = theta_xt / temp_parameter
+    hmax = theta_xt_devi_by_temp.max(axis = 0,keepdims = True)
+    theta_xt_devi_by_temp_minus_max = theta_xt_devi_by_temp - hmax
+    exp_theta_xt_devi_by_temp_minus_max = np.exp(theta_xt_devi_by_temp_minus_max)
+    hsum = exp_theta_xt_devi_by_temp_minus_max.sum(axis = 0,keepdims = True)
+    H = (exp_theta_xt_devi_by_temp_minus_max)/hsum
+    
+    return H
+            
     raise NotImplementedError
+    """ @author: YiWei """
 
 def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):
     """
@@ -50,9 +62,29 @@ def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):
     Returns
         c - the cost value (scalar)
     """
-    #YOUR CODE HERE
+    
+    """ @author: YiWei """
+    H = compute_probabilities(X, theta, temp_parameter)
+    n = X.shape[0]
+    total_cost = 0
+    
+    for datapoint_ind in range(n):
+        y = Y[datapoint_ind]
+        try:
+            cost = math.log(H[y,datapoint_ind])
+        except:
+            cost = 0
+        total_cost += cost
+    total_cost = -total_cost/n
+    theta_flat = theta.ravel()
+    theta2_flat = theta_flat*theta_flat
+    regu_term = (theta2_flat.sum())*lambda_factor/2
+    total_cost = total_cost + regu_term
+        
+    return total_cost
     raise NotImplementedError
-
+    """ @author: YiWei """
+    
 def run_gradient_descent_iteration(X, Y, theta, alpha, lambda_factor, temp_parameter):
     """
     Runs one step of batch gradient descent
@@ -70,9 +102,20 @@ def run_gradient_descent_iteration(X, Y, theta, alpha, lambda_factor, temp_param
     Returns:
         theta - (k, d) NumPy array that is the final value of parameters theta
     """
-    #YOUR CODE HERE
+    
+    """ @author: YiWei """    
+    itemp=1./temp_parameter
+    num_examples = X.shape[0]
+    num_labels = theta.shape[0]
+    probabilities = compute_probabilities(X, theta, temp_parameter)
+    # M[i][j] = 1 if y^(j) = i and 0 otherwise.
+    M = sparse.coo_matrix(([1]*num_examples, (Y,range(num_examples))), shape=(num_labels,num_examples)).toarray()
+    non_regularized_gradient = np.dot(M-probabilities, X)
+    non_regularized_gradient *= -itemp/num_examples
+    return theta - alpha * (non_regularized_gradient + lambda_factor * theta)
     raise NotImplementedError
-
+    """ @author: YiWei """
+    
 def update_y(train_y, test_y):
     """
     Changes the old digit labels for the training and test set for the new (mod 3)
@@ -90,9 +133,14 @@ def update_y(train_y, test_y):
         test_y_mod3 - (n, ) NumPy array containing the new labels (a number between 0-2)
                     for each datapoint in the test set
     """
-    #YOUR CODE HERE
+    
+    """ @author: YiWei """
+    train_y_mod3 = train_y%3
+    test_y_mod3 = test_y%3    
+    return train_y_mod3,test_y_mod3
     raise NotImplementedError
-
+    """ @author: YiWei """
+    
 def compute_test_error_mod3(X, Y, theta, temp_parameter):
     """
     Returns the error of these new labels when the classifier predicts the digit. (mod 3)
@@ -108,9 +156,13 @@ def compute_test_error_mod3(X, Y, theta, temp_parameter):
     Returns:
         test_error - the error rate of the classifier (scalar)
     """
-    #YOUR CODE HERE
+    
+    """ @author: YiWei """
+    predict = get_classification(X,theta,temp_parameter)%3
+    return 1-(predict==Y).mean()
     raise NotImplementedError
-
+    """ @author: YiWei """
+    
 def softmax_regression(X, Y, temp_parameter, alpha, lambda_factor, k, num_iterations):
     """
     Runs batch gradient descent for a specified number of iterations on a dataset
