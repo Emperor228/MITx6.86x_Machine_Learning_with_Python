@@ -10,8 +10,9 @@ class GaussianMixture(NamedTuple):
     mu: np.ndarray  # (K, d) array - each row corresponds to a gaussian component mean
     var: np.ndarray  # (K, ) array - each row corresponds to the variance of a component
     p: np.ndarray  # (K, ) array = each row corresponds to the weight of a component
-
-
+    
+        
+        
 def init(X: np.ndarray, K: int,
          seed: int = 0) -> Tuple[GaussianMixture, np.ndarray]:
     """Initializes the mixture model with random points as initial
@@ -98,4 +99,9 @@ def bic(X: np.ndarray, mixture: GaussianMixture,
     Returns:
         float: the BIC for this mixture
     """
+    n, d = X.shape
+    k, _ = mixture.mu.shape
+    p = k*d+k+k-1
+    bic = log_likelihood - (1/2)*p*np.log(n)
+    return bic
     raise NotImplementedError
