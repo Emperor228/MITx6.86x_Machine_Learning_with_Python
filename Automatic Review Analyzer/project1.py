@@ -1,6 +1,7 @@
 from string import punctuation, digits
 import numpy as np
 import random
+import math
 
 # Part I
 
@@ -36,7 +37,17 @@ def hinge_loss_single(feature_vector, label, theta, theta_0):
     Returns: A real number representing the hinge loss associated with the
     given data point and parameters.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    z_in_loss = label*(np.dot(feature_vector,theta)+theta_0)
+    if z_in_loss >=1 :
+        loss = 0 ;
+    else:
+        loss = 1-z_in_loss ;
+    return loss
+    """ @author: YiWei """
+    
+    
     raise NotImplementedError
 #pragma: coderesponse end
 
@@ -60,8 +71,14 @@ def hinge_loss_full(feature_matrix, labels, theta, theta_0):
     given dataset and parameters. This number should be the average hinge
     loss across all of the points in the feature matrix.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    total_loss = 0
+    for i in range(len(labels)) :
+        total_loss += hinge_loss_single(feature_matrix[i], labels[i], theta, theta_0) ;
+    return total_loss/len(labels)
     raise NotImplementedError
+    """ @author: YiWei """
 #pragma: coderesponse end
 
 
@@ -88,8 +105,15 @@ def perceptron_single_step_update(
     real valued number with the value of theta_0 after the current updated has
     completed.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    if label*(np.dot(feature_vector,current_theta)+current_theta_0) <= 0 :
+        current_theta += label*feature_vector 
+        current_theta_0 += label; 
+    return (current_theta,current_theta_0)
     raise NotImplementedError
+    """ @author: YiWei """
+    
 #pragma: coderesponse end
 
 
@@ -119,12 +143,24 @@ def perceptron(feature_matrix, labels, T):
     theta_0, the offset classification parameter, after T iterations through
     the feature matrix.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    len_of_feature = feature_matrix.shape[1]
+    theta = np.zeros(len_of_feature)
+    theta_0 = 0
     for t in range(T):
         for i in get_order(feature_matrix.shape[0]):
-            # Your code here
-            pass
+            feature_vector = feature_matrix[i]
+            label = labels[i]
+            current_theta = theta
+            current_theta_0 = theta_0
+            perceptron_output = perceptron_single_step_update(feature_vector,label,current_theta,current_theta_0)
+            theta = perceptron_output[0]
+            theta_0 = perceptron_output[1]
+    return (theta,theta_0)
     raise NotImplementedError
+    """ @author: YiWei """
+    
 #pragma: coderesponse end
 
 
@@ -158,8 +194,28 @@ def average_perceptron(feature_matrix, labels, T):
     Hint: It is difficult to keep a running average; however, it is simple to
     find a sum and divide.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    len_of_feature = feature_matrix.shape[1]
+    total_theta = np.zeros(len_of_feature)
+    total_theta_0 = 0
+    theta = np.zeros(len_of_feature)
+    theta_0 = 0
+    for t in range(T):
+        for i in get_order(feature_matrix.shape[0]):
+            feature_vector = feature_matrix[i]
+            label = labels[i]
+            current_theta = theta
+            current_theta_0 = theta_0
+            perceptron_output = perceptron_single_step_update(feature_vector,label,current_theta,current_theta_0)
+            theta = perceptron_output[0]
+            theta_0 = perceptron_output[1]
+            total_theta += theta
+            total_theta_0 += theta_0
+    return (total_theta/(feature_matrix.shape[0]*T),total_theta_0/(feature_matrix.shape[0]*T))
     raise NotImplementedError
+    """ @author: YiWei """
+    
 #pragma: coderesponse end
 
 
@@ -190,8 +246,17 @@ def pegasos_single_step_update(
     real valued number with the value of theta_0 after the current updated has
     completed.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    if label*(np.dot(feature_vector,current_theta)+current_theta_0) <= 1 :
+        current_theta = (1-L*eta)*current_theta + eta*label*feature_vector 
+        current_theta_0 = current_theta_0 + eta*label; 
+    else:
+        current_theta = (1-L*eta)*current_theta
+    return (current_theta,current_theta_0)
     raise NotImplementedError
+    """ @author: YiWei """
+    
 #pragma: coderesponse end
 
 
@@ -225,8 +290,28 @@ def pegasos(feature_matrix, labels, T, L):
     number with the value of the theta_0, the offset classification
     parameter, found after T iterations through the feature matrix.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    len_of_feature = feature_matrix.shape[1]
+    theta = np.zeros(len_of_feature)
+    theta_0 = 0
+    num_of_update = 0
+    for t in range(T):
+        for i in get_order(feature_matrix.shape[0]):
+            num_of_update += 1
+            feature_vector = feature_matrix[i]
+            label = labels[i]
+            current_theta = theta
+            current_theta_0 = theta_0
+            eta = 1/math.sqrt(num_of_update)
+            perceptron_output = pegasos_single_step_update(feature_vector,label,L,eta,current_theta,current_theta_0)
+            theta = perceptron_output[0]
+            theta_0 = perceptron_output[1]
+  
+    return (theta,theta_0)
     raise NotImplementedError
+    """ @author: YiWei """
+    
 #pragma: coderesponse end
 
 # Part II
@@ -250,8 +335,16 @@ def classify(feature_matrix, theta, theta_0):
     given theta and theta_0. If a prediction is GREATER THAN zero, it should
     be considered a positive classification.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    prediction = feature_matrix @theta + theta_0
+    for i in range(len(prediction)) :
+        if  prediction[i] == 0 :
+            prediction[i] = -1
+    return np.sign(prediction)
     raise NotImplementedError
+    """ @author: YiWei """
+    
 #pragma: coderesponse end
 
 
@@ -288,8 +381,19 @@ def classifier_accuracy(
     trained classifier on the training data and the second element is the
     accuracy of the trained classifier on the validation data.
     """
-    # Your code here
+    
+    """ @author: YiWei """
+    theta_theta0 = classifier(train_feature_matrix,train_labels,**kwargs)
+    theta = theta_theta0[0]
+    theta_0 = theta_theta0[1]
+    train_prediction = classify(train_feature_matrix,theta,theta_0)
+    val_prediction = classify(val_feature_matrix,theta,theta_0)
+    train_accuracy = accuracy(train_prediction,train_labels)
+    val_accuracy = accuracy(val_prediction,val_labels)
+    return (train_accuracy, val_accuracy)    
     raise NotImplementedError
+    """ @author: YiWei """
+    
 #pragma: coderesponse end
 
 
@@ -301,10 +405,13 @@ def extract_words(input_string):
     Returns a list of lowercase words in the string.
     Punctuation and digits are separated out into their own words.
     """
+    
+    """ @author: YiWei """
     for c in punctuation + digits:
         input_string = input_string.replace(c, ' ' + c + ' ')
 
     return input_string.lower().split()
+    """ @author: YiWei """
 #pragma: coderesponse end
 
 
@@ -317,13 +424,19 @@ def bag_of_words(texts):
     Feel free to change this code as guided by Problem 9
     """
     # Your code here
+    
+    """ @author: YiWei """
+    text_file = open("stopwords.txt")
+    stopwords = text_file.read().split('\n')
     dictionary = {} # maps word to unique index
     for text in texts:
         word_list = extract_words(text)
         for word in word_list:
-            if word not in dictionary:
+            if word not in dictionary:# and word not in stopwords:
                 dictionary[word] = len(dictionary)
     return dictionary
+    """ @author: YiWei """
+    
 #pragma: coderesponse end
 
 
@@ -338,8 +451,8 @@ def extract_bow_feature_vectors(reviews, dictionary):
 
     Feel free to change this code as guided by Problem 9
     """
-    # Your code here
-
+    
+    """ @author: YiWei """
     num_reviews = len(reviews)
     feature_matrix = np.zeros([num_reviews, len(dictionary)])
 
@@ -348,7 +461,10 @@ def extract_bow_feature_vectors(reviews, dictionary):
         for word in word_list:
             if word in dictionary:
                 feature_matrix[i, dictionary[word]] = 1
+                #for Problem 9
+                #feature_matrix[i, dictionary[word]] += 1
     return feature_matrix
+    """ @author: YiWei """
 #pragma: coderesponse end
 
 
